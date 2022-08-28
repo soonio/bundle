@@ -5,7 +5,13 @@
 > 主要过程接收请求参数到 chan 队列中，然后当队列中数据每达到一定量的时候，合并多个调用handle
 
 
-## 使用demo
+## Install
+
+```bash
+go get -u github.com/soonio/bundle
+```
+
+## Usage
 
 ```go
 package main
