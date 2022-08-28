@@ -1,7 +1,7 @@
 # BUNDLE
 
 > 一个练手项目，打包器。  
-> 主要使用的技术chan，for + select case，范型
+> 主要使用的技术chan，for + select case，泛型
 > 主要过程接收请求参数到 chan 队列中，然后当队列中数据每达到一定量的时候，合并多个调用handle
 
 ## channel
