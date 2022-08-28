@@ -6,9 +6,9 @@ import (
 )
 
 const (
-	defaultBundleSize = 20
-	defaultTimeout    = 10 * time.Second
-	defaultPCap       = 1000
+	defaultSize    = 20
+	defaultTimeout = 10 * time.Second
+	defaultPCap    = 1000
 )
 
 //操作	    空值(nil)	非空已关闭	非空未关闭
@@ -18,7 +18,7 @@ const (
 
 func New[T any](handler func([]T), opt ...Apply[T]) *bundle[T] {
 	b := &bundle[T]{
-		size:    defaultBundleSize,
+		size:    defaultSize,
 		timeout: defaultTimeout,
 		close:   make(chan struct{}),
 		handler: handler,
