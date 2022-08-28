@@ -11,11 +11,6 @@ const (
 	defaultPCap    = 1000
 )
 
-//操作	    空值(nil)	非空已关闭	非空未关闭
-//关闭		panic		panic		成功关闭
-//发送数据	永久阻塞		panic		阻塞或成功发送
-//接收数据	永久阻塞		永不阻塞		阻塞或者成功接收
-
 func New[T any](handler func([]T), opt ...Apply[T]) *bundle[T] {
 	b := &bundle[T]{
 		size:    defaultSize,
