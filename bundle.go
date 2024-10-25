@@ -11,8 +11,8 @@ const (
 	defaultPCap    = 1000
 )
 
-func New[T any](handler func([]T), opt ...Apply[T]) *bundle[T] {
-	b := &bundle[T]{
+func New[T any](handler func([]T), opt ...Apply[T]) *Bundle[T] {
+	b := &Bundle[T]{
 		size:    defaultSize,
 		timeout: defaultTimeout,
 		close:   make(chan struct{}),
@@ -32,7 +32,7 @@ func New[T any](handler func([]T), opt ...Apply[T]) *bundle[T] {
 	return b
 }
 
-type bundle[T any] struct {
+type Bundle[T any] struct {
 	count    int           // 计数是否达到阈值
 	size     int           // 打包阈值
 	payloads chan T        // 载荷
@@ -45,7 +45,7 @@ type bundle[T any] struct {
 }
 
 // Add 添加一个载荷
-func (b *bundle[T]) Add(payload T) {
+func (b *Bundle[T]) Add(payload T) {
 	b.payloads <- payload
 	b.lock.Lock()
 	defer b.lock.Unlock()
@@ -56,19 +56,11 @@ func (b *bundle[T]) Add(payload T) {
 }
 
 // Start 启动服务
-func (b *bundle[T]) Start() {
+func (b *Bundle[T]) Start() {
 	go b.working()
 }
 
-func (b *bundle[T]) working() {
-	defer func() { // 完成关闭并通知
-		b.close <- struct{}{}
-	}()
-	defer func() { // 关闭前把剩余未打包的进行打包操作
-		for len(b.payloads) > 0 {
-			b.pack()
-		}
-	}()
+func (b *Bundle[T]) working() {
 	for {
 		select {
 		case <-b.do: // 收到打包信号
@@ -84,7 +76,7 @@ func (b *bundle[T]) working() {
 }
 
 // 执行分组打包
-func (b *bundle[T]) pack() {
+func (b *Bundle[T]) pack() {
 	l := len(b.payloads)
 	if l > 0 {
 		var size = l
@@ -100,11 +92,13 @@ func (b *bundle[T]) pack() {
 	}
 }
 
-func (b *bundle[T]) Close() {
-	close(b.payloads)     // 关闭payloads
-	b.timer.Stop()        // 关闭计时器
-	b.close <- struct{}{} // 发送关闭信号
-	<-b.close             // 等待关闭完成
-	close(b.close)        // 销毁关闭信号chan
-	close(b.do)           // 销毁执行任务信号chan
+func (b *Bundle[T]) Close() {
+	close(b.payloads) // 关闭payloads
+	b.timer.Stop()    // 关闭计时器
+	close(b.close)    // 销毁关闭信号chan
+	close(b.do)       // 销毁执行任务信号chan
+
+	for len(b.payloads) > 0 {
+		b.pack()
+	}
 }
