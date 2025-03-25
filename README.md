@@ -82,5 +82,3 @@ func main() {
 ## Licenses
     
   MIT
-
-## 谢谢Jetbrain的Goland

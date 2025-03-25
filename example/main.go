@@ -25,7 +25,7 @@ func main() {
 			}
 			fmt.Println(strings.Join(names, "|"))
 		},
-		bundle.WithSize[*Form](30),
+		bundle.WithSize[*Form](10),
 		bundle.WithTimeout[*Form](3*time.Second),
 		bundle.WithPayloadSize[*Form](1000),
 	)

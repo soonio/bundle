@@ -6,15 +6,15 @@ import (
 )
 
 const (
-	defaultSize    = 20
-	defaultTimeout = 10 * time.Second
-	defaultPCap    = 1000
+	defaultSize    = 20   // 一个包的大小
+	defaultTimeout = 10   // 超时时间
+	defaultPCap    = 1000 // 存储数据的队列
 )
 
 func New[T any](handler func([]T), opt ...Apply[T]) *Bundle[T] {
 	b := &Bundle[T]{
 		size:    defaultSize,
-		timeout: defaultTimeout,
+		timeout: defaultTimeout * time.Second,
 		close:   make(chan struct{}),
 		handler: handler,
 	}
@@ -47,8 +47,10 @@ type Bundle[T any] struct {
 // Add 添加一个载荷
 func (b *Bundle[T]) Add(payload T) {
 	b.payloads <- payload
+
 	b.lock.Lock()
 	defer b.lock.Unlock()
+
 	b.count = (b.count + 1) % b.size
 	if b.count+1 == b.size {
 		b.do <- struct{}{}
@@ -63,10 +65,10 @@ func (b *Bundle[T]) Start() {
 func (b *Bundle[T]) working() {
 	for {
 		select {
-		case <-b.do: // 收到打包信号
+		case <-b.do: // 信号触发打包
 			b.pack()
-			b.timer.Reset(b.timeout)
-		case <-b.timer.C: // 收到超时信号
+			b.timer.Reset(b.timeout) // 重置超时器
+		case <-b.timer.C: // 超时触发打包
 			b.pack()
 			b.timer.Reset(b.timeout)
 		case <-b.close: // 收到关闭信号
