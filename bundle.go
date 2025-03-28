@@ -51,8 +51,9 @@ func (b *Bundle[T]) Add(payload T) {
 	b.lock.Lock()
 	defer b.lock.Unlock()
 
-	b.count = (b.count + 1) % b.size
-	if b.count+1 == b.size {
+	nc := b.count + 1
+	b.count = nc % b.size
+	if nc == b.size {
 		b.do <- struct{}{}
 	}
 }
